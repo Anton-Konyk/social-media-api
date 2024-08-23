@@ -8,7 +8,8 @@ from rest_framework_simplejwt.views import (
 
 from user.views import (
     CreateUserView,
-    ManageUserView
+    ManageUserView,
+    LogoutView,
 )
 
 urlpatterns = [
@@ -28,7 +29,8 @@ urlpatterns = [
         TokenVerifyView.as_view(),
         name="token_verify"
     ),
-    path("my/", ManageUserView.as_view(), name="manage_user")
+    path("logout/", LogoutView.as_view(), name="logout"),
+    path("me/", ManageUserView.as_view(), name="manage_user"),
 ]
 
 app_name = "user"
