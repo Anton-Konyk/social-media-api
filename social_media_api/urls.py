@@ -1,5 +1,5 @@
 """
-URL configuration for social-media-api project.
+URL configuration for social_media_api project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.1/topics/http/urls/
@@ -15,10 +15,14 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
+
+from social_media_api import settings
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/v1/user/", include("user.urls", namespace="user")),
-]
+    path("api/v1/social-media/", include("media.urls"), name="social-media"),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
