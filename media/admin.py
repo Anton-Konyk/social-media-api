@@ -1,3 +1,14 @@
 from django.contrib import admin
 
-# Register your models here.
+from media.models import (
+    Profile,
+    Post,
+    Comment,
+    UserReaction,
+)
+
+
+admin.site.register(Profile)
+admin.site.register(Post)
+admin.site.register(Comment)
+admin.site.register(UserReaction)
