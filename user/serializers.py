@@ -4,11 +4,10 @@ from django.utils.translation import gettext_lazy as _
 
 
 class UserSerializer(serializers.ModelSerializer):
-    bio = serializers.CharField(source="profile.bio")
 
     class Meta:
         model = get_user_model()
-        fields = ("id", "email", "password", "is_staff", "bio")
+        fields = ("id", "email", "password", "is_staff")
         read_only_fields = ("id", "is_staff")
         extra_kwargs = {
             "password": {
