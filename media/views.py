@@ -6,7 +6,11 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from media.permissions import IsOwnerProfile
-from media.serializers import ProfileSerializer, ProfileImageSerializer
+from media.serializers import (
+    ProfileSerializer,
+    ProfileImageSerializer,
+    ProfileFollowingToMeSerializer
+)
 from media.models import Profile
 
 
@@ -121,3 +125,22 @@ class ProfileViewSet(
     def list(self, request, *args, **kwargs):
         """Get list of profiles."""
         return super().list(request, *args, **kwargs)
+
+
+class ProfileFollowingToMeViewSet(
+    mixins.ListModelMixin,
+    GenericViewSet
+):
+    serializer_class = ProfileFollowingToMeSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        current_profile = user.profile
+
+        if current_profile:
+            queryset = Profile.objects.filter(following=current_profile)
+        else:
+            queryset = Profile.objects.none()
+            raise Profile.DoesNotExist("Profile does not exist for the user.")
+
+        return queryset
