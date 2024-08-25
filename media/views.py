@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -22,6 +23,11 @@ class ProfileViewSet(
 ):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
+
+    # @staticmethod
+    # def _params_to_ints(query_string):
+    #     """Converts a string of format '1,2,3' to a list of integers [1,2,3]"""
+    #     return [int(str_id) for str_id in query_string.split(",")]
 
     @action(
         methods=["POST"],
@@ -56,3 +62,53 @@ class ProfileViewSet(
         serializer.save(user=request.user)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def get_queryset(self):
+        queryset = self.queryset
+        username = self.request.query_params.get("username")
+        bio = self.request.query_params.get("bio")
+
+        if username:
+            username_ids = (Profile.objects.
+                            filter(username__icontains=username).
+                            values_list("id")
+                            )
+            queryset = Profile.objects.filter(id__in=username_ids)
+        if bio:
+            bio_ids = (Profile.objects.
+                       filter(bio__icontains=bio).
+                       values_list("id")
+                       )
+            queryset = (
+                Profile.objects.filter(id__in=bio_ids))
+        if username and bio:
+            queryset = (
+                Profile.objects.
+                filter(Q(id__in=username_ids) &
+                       Q(id__in=bio_ids)))
+
+        if self.action == ("list", "retrieve"):
+            queryset = Profile.objects.prefetch_related("following")
+
+        return queryset
+
+    # @extend_schema(
+    #     parameters=[
+    #         OpenApiParameter(
+    #             "source",
+    #             type={"type": "string", "items": {"type": "name"}},
+    #             description="Filter by source station id ex. ?source=Berlin",
+    #
+    #         ),
+    #         OpenApiParameter(
+    #             "destination",
+    #             type={"type": "string", "items": {"type": "name"}},
+    #             description="Filter by destination station id ex. "
+    #                         "?destination=Vien",
+    #
+    #         ),
+    #     ]
+    # )
+    def list(self, request, *args, **kwargs):
+        """Get list of profiles."""
+        return super().list(request, *args, **kwargs)
