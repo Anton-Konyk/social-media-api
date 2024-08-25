@@ -10,10 +10,6 @@ from media.serializers import ProfileSerializer, ProfileImageSerializer
 from media.models import Profile
 
 
-# class ProfileViewSet(viewsets.ModelViewSet):
-#     queryset = Profile.objects.all()
-#     serializer_class = ProfileSerializer
-
 class ProfileViewSet(
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
@@ -24,10 +20,10 @@ class ProfileViewSet(
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
 
-    # @staticmethod
-    # def _params_to_ints(query_string):
-    #     """Converts a string of format '1,2,3' to a list of integers [1,2,3]"""
-    #     return [int(str_id) for str_id in query_string.split(",")]
+    @staticmethod
+    def _params_to_ints(query_string):
+        """Converts a string of format '1,2,3' to a list of integers [1,2,3]"""
+        return [int(str_id) for str_id in query_string.split(",")]
 
     @action(
         methods=["POST"],
@@ -67,6 +63,7 @@ class ProfileViewSet(
         queryset = self.queryset
         username = self.request.query_params.get("username")
         bio = self.request.query_params.get("bio")
+        followers = self.request.query_params.get("following")
 
         if username:
             username_ids = (Profile.objects.
@@ -74,6 +71,7 @@ class ProfileViewSet(
                             values_list("id")
                             )
             queryset = Profile.objects.filter(id__in=username_ids)
+
         if bio:
             bio_ids = (Profile.objects.
                        filter(bio__icontains=bio).
@@ -81,11 +79,22 @@ class ProfileViewSet(
                        )
             queryset = (
                 Profile.objects.filter(id__in=bio_ids))
+
         if username and bio:
             queryset = (
                 Profile.objects.
                 filter(Q(id__in=username_ids) &
                        Q(id__in=bio_ids)))
+
+        if followers:
+            followers_ids = self._params_to_ints(followers)
+            queryset = Profile.objects.filter(following__in=followers_ids)
+
+        if followers and username:
+            queryset = (
+                Profile.objects.
+                filter(Q(id__in=username_ids) &
+                       Q(following__in=followers_ids)))
 
         if self.action == ("list", "retrieve"):
             queryset = Profile.objects.prefetch_related("following")
