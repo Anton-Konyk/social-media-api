@@ -21,6 +21,7 @@ class UserSerializer(serializers.ModelSerializer):
             "email",
             "password",
             "is_staff",
+            "username",
             "profile_pic",
             "bio",
             "following",

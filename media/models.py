@@ -22,6 +22,7 @@ def movie_image_file_path(instance, filename):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    username = models.CharField(max_length=120, unique=True)
     profile_pic = models.ImageField(upload_to=movie_image_file_path, null=True, blank=True)
     bio = models.CharField(max_length=400, null=True, blank=True)
     following = models.ManyToManyField(
