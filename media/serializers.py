@@ -26,3 +26,16 @@ class ProfileImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ("id", "profile_pic")
+
+
+class ProfileFollowingToMeSerializer(serializers.ModelSerializer):
+    following = serializers.SlugRelatedField(
+        read_only=True,
+        many=True,
+        slug_field="user.email"
+    )
+
+    class Meta:
+        model = Profile
+        fields = ("username", "following")
+        ordering = ["username"]
