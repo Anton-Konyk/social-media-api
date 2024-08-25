@@ -12,7 +12,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     following = serializers.SlugRelatedField(
         read_only=True,
         many=True,
-        slug_field="email"
+        slug_field="user.email"
     )
 
     class Meta:
