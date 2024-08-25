@@ -17,7 +17,7 @@ def movie_image_file_path(instance, filename):
     else:
         folder = "post_image"
 
-    return os.path.join(f"media_files/uploads/{folder}/", filename)
+    return os.path.join(f"uploads/{folder}/", filename)
 
 
 class Profile(models.Model):
