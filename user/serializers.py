@@ -7,12 +7,8 @@ from media.models import Profile
 
 class UserSerializer(serializers.ModelSerializer):
     profile_pic = serializers.ImageField(source="profile.profile_pic", required=False)
+    username = serializers.CharField(source="profile.username")
     bio = serializers.CharField(source="profile.bio", required=False)
-    following = serializers.PrimaryKeyRelatedField(
-        queryset=get_user_model().objects.all(),
-        many=True,
-        required=False
-    )
 
     class Meta:
         model = get_user_model()
@@ -20,13 +16,10 @@ class UserSerializer(serializers.ModelSerializer):
             "id",
             "email",
             "password",
-            "is_staff",
             "username",
             "profile_pic",
             "bio",
-            "following",
         )
-        read_only_fields = ("id", "is_staff")
         extra_kwargs = {
             "password": {
                 "write_only": True,
@@ -41,15 +34,7 @@ class UserSerializer(serializers.ModelSerializer):
         profile_data = validated_data.pop("profile", None)
 
         user = get_user_model().objects.create_user(**validated_data)
-
-        profile = getattr(user, 'profile', None)
-        if not profile:
-            profile = Profile.objects.create(user=user)
-
-        if profile_data:
-            for attr, value in profile_data.items():
-                setattr(profile, attr, value)
-            profile.save()
+        profile = Profile.objects.create(user=user, **profile_data)
 
         return user
 
@@ -64,9 +49,10 @@ class UserSerializer(serializers.ModelSerializer):
             user.save()
 
         if profile_data:
+            profile = instance.profile
             for attr, value in profile_data.items():
-                setattr(user.profile, attr, value)
-            user.profile.save()
+                setattr(profile, attr, value)
+            profile.save()
 
         return user
 
