@@ -1,5 +1,7 @@
+from django.contrib.auth import get_user_model
 from django.db.models import Q
-from rest_framework import viewsets, mixins, status
+from django.shortcuts import get_object_or_404
+from rest_framework import viewsets, mixins, status, views
 from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -144,3 +146,64 @@ class ProfileFollowingToMeViewSet(
             raise Profile.DoesNotExist("Profile does not exist for the user.")
 
         return queryset
+
+
+class SetFollowView(views.APIView):
+    serializer_class = ProfileSerializer
+
+    def post(self, request, user_id):
+        current_user = self.request.user
+        target_user = get_object_or_404(get_user_model(), id=user_id)
+
+        current_profile, _ = Profile.objects.get_or_create(
+            user=current_user,
+            defaults={
+                "user": current_user,
+                "username": current_user.email,
+            }
+        )
+        target_profile, _ = Profile.objects.get_or_create(
+            user=target_user,
+            defaults={
+                "user": target_user,
+                "username": target_user.email,
+            }
+        )
+
+        if target_profile in current_profile.following.all():
+            return Response({"detail": f"You already have following to "
+                             f"the user :{target_profile.username} with id: "
+                             f"{target_profile.id}."},
+                            status=status.HTTP_200_OK
+                            )
+        else:
+            current_profile.following.add(target_profile)
+
+            return Response(
+                {"detail": "You have subscribed successfully."},
+                status=status.HTTP_200_OK
+            )
+
+
+class UnFollowView(views.APIView):
+    serializer_class = ProfileSerializer
+
+    def post(self, request, user_id):
+        current_user = self.request.user
+        target_user = get_object_or_404(get_user_model(), id=user_id)
+
+        current_profile = Profile.objects.get(user=current_user)
+        target_profile = get_object_or_404(Profile, user=target_user)
+
+        if target_profile in current_profile.following.all():
+            current_user.profile.following.remove(target_profile)
+            return Response(
+                {"detail": "You unsubscribed successfully."},
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response({"detail": f"You already have unsubscribed from "
+                             f"the user :{target_profile.username} with id: "
+                             f"{target_profile.id}."},
+                            status=status.HTTP_200_OK
+                            )

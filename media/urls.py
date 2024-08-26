@@ -4,6 +4,8 @@ from rest_framework import routers
 from media.views import (
     ProfileViewSet,
     ProfileFollowingToMeViewSet,
+    SetFollowView,
+    UnFollowView,
 )
 
 app_name = "media"
@@ -17,5 +19,7 @@ router.register(
 )
 
 urlpatterns = [
-    path("", include(router.urls))
+    path("", include(router.urls)),
+    path("set-follow/<int:user_id>/", SetFollowView.as_view(), name="set-follow"),
+    path("unfollow/<int:user_id>/", UnFollowView.as_view(), name="unfollow")
 ]
