@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from media.models import Profile
+from media.models import Profile, Post
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -39,3 +39,54 @@ class ProfileFollowingToMeSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ("username", "following")
         ordering = ["username"]
+
+
+class PostListSerializer(serializers.ModelSerializer):
+    user = serializers.SlugRelatedField(
+        read_only=True,
+        many=False,
+        slug_field="email"
+    )
+    username = serializers.SlugRelatedField(
+        source="user.profile",
+        read_only=True,
+        many=False,
+        slug_field="username"
+    )
+
+    class Meta:
+        model = Post
+        fields = (
+            "id",
+            "user",
+            "username",
+            "title",
+            "message",
+            "image",
+            "hashtag",
+            "scheduled_publish_time",
+            "is_published",
+        )
+        extra_kwargs = {"image": {"read_only": True}}
+
+
+class PostImageSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Post
+        fields = ("id", "image")
+
+
+class PostCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Post
+        fields = (
+            "id",
+            "user",
+            "title",
+            "message",
+            "hashtag",
+            "scheduled_publish_time",
+        )
+        extra_kwargs = {"user": {"read_only": True}}

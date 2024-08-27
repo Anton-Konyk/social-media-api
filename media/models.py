@@ -21,7 +21,7 @@ def movie_image_file_path(instance, filename):
 
 
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE, related_name="profile")
     username = models.CharField(max_length=120, unique=True)
     profile_pic = models.ImageField(upload_to=movie_image_file_path, null=True, blank=True)
     bio = models.CharField(max_length=400, null=True, blank=True)
@@ -49,20 +49,20 @@ class Post(models.Model):
     is_published = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.owner.email} Title: {self.title[0:10]}"
+        return f"{self.user.email} Title: {self.title[0:10]}"
 
     class Meta:
         verbose_name_plural = "posts"
 
 
 class Comment(models.Model):
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
     comment = models.TextField(max_length=500, null=True, blank=True)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.owner.email} Comment: {self.comment[0:10]}"
+        return f"{self.user.email} Comment: {self.comment[0:10]}"
 
     class Meta:
         verbose_name_plural = "comments"
@@ -75,13 +75,13 @@ class UserReaction(models.Model):
         ("L", "Like"),
     )
 
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reactions")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reactions")
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="reactions")
     reaction = models.CharField(max_length=1, choices=STATUS_CHOICES, default="L")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.owner.email} Post: {self.post.title[0:10]} Reaction: {self.reaction}"
+        return f"{self.user.email} Post: {self.post.title[0:10]} Reaction: {self.reaction}"
 
     class Meta:
         verbose_name_plural = "reactions"
