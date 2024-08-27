@@ -11,9 +11,12 @@ from media.permissions import IsOwnerProfile
 from media.serializers import (
     ProfileSerializer,
     ProfileImageSerializer,
-    ProfileFollowingToMeSerializer
+    ProfileFollowingToMeSerializer,
+    PostListSerializer,
+    PostImageSerializer,
+    PostCreateSerializer,
 )
-from media.models import Profile
+from media.models import Profile, Post
 
 
 class ProfileViewSet(
@@ -153,8 +156,9 @@ class SetFollowView(views.APIView):
 
     def post(self, request, user_id):
         current_user = self.request.user
+        print(f"target_user_id: {user_id}")
         target_user = get_object_or_404(get_user_model(), id=user_id)
-
+        print(target_user)
         current_profile = Profile.objects.get(user=current_user)
         target_profile = Profile.objects.get(user=target_user)
 
@@ -195,3 +199,102 @@ class UnFollowView(views.APIView):
                              f"{target_profile.id}."},
                             status=status.HTTP_200_OK
                             )
+
+
+class PostViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    GenericViewSet
+):
+    queryset = Post.objects.all()
+    serializer_class = PostListSerializer
+
+    @action(
+        methods=["POST"],
+        detail=True,
+        permission_classes=[IsAuthenticated, IsOwnerProfile],
+        url_path="upload-image_post",
+        serializer_class=PostImageSerializer,
+    )
+    def upload_image(self, request, pk=None):
+        post = self.get_object()
+        serializer = self.get_serializer(post, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return PostListSerializer
+        if self.action == "create":
+            return PostCreateSerializer
+        if self.action == "retrieve":
+            return PostListSerializer
+        elif self.action == "upload_image":
+            return PostImageSerializer
+        return super().get_serializer_class()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=request.user)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def get_queryset(self):
+        queryset = self.queryset
+        username = self.request.query_params.get("username")
+        message = self.request.query_params.get("message")
+        hashtag = self.request.query_params.get("hashtag")
+        following = self.request.query_params.get("following")
+
+        if username:
+            username_ids = (Post.objects.
+                            filter(user__profile__username__icontains=username).
+                            values_list("id")
+                            )
+            queryset = Post.objects.filter(id__in=username_ids)
+
+        if message:
+            message_ids = (Post.objects.
+                           filter(message__icontains=message).
+                           values_list("id")
+                           )
+            queryset = (
+                Post.objects.filter(id__in=message_ids))
+
+        if hashtag:
+            hashtag_ids = (Post.objects.
+                           filter(hashtag__icontains=hashtag).
+                           values_list("id")
+                           )
+            queryset = (
+                Post.objects.filter(id__in=hashtag_ids))
+
+        if username and message:
+            queryset = (
+                Post.objects.
+                filter(Q(id__in=username_ids) &
+                       Q(id__in=message_ids))
+            )
+
+        if username and hashtag:
+            queryset = (
+                Post.objects.
+                filter(Q(id__in=username_ids) &
+                       Q(id__in=hashtag_ids))
+            )
+
+        if following:
+            following_ids = (Post.objects.
+                             filter(user__profile__following__isnull=False).
+                             values_list("id")
+                             )
+            queryset = Post.objects.filter(id__in=following_ids)
+
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        """Get list of profiles."""
+        return super().list(request, *args, **kwargs)

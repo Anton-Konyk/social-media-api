@@ -6,6 +6,7 @@ from media.views import (
     ProfileFollowingToMeViewSet,
     SetFollowView,
     UnFollowView,
+    PostViewSet,
 )
 
 app_name = "media"
@@ -17,6 +18,7 @@ router.register(
     ProfileFollowingToMeViewSet,
     basename="profile-following-to-me"
 )
+router.register("posts", PostViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
