@@ -45,8 +45,6 @@ class Post(models.Model):
     message = models.TextField(max_length=500, null=True, blank=True)
     image = models.ImageField(upload_to=movie_image_file_path, null=True, blank=True)
     hashtag = models.CharField(max_length=255, null=True, blank=True)
-    like = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="likes")
-    dislike = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="dislikes")
     scheduled_publish_time = models.DateTimeField(null=True, blank=True)
     is_published = models.BooleanField(default=False)
 
