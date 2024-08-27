@@ -40,7 +40,7 @@ class Profile(models.Model):
 
 
 class Post(models.Model):
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
     title = models.CharField(max_length=255)
     message = models.TextField(max_length=500, null=True, blank=True)
     image = models.ImageField(upload_to=movie_image_file_path, null=True, blank=True)
