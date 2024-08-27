@@ -155,20 +155,8 @@ class SetFollowView(views.APIView):
         current_user = self.request.user
         target_user = get_object_or_404(get_user_model(), id=user_id)
 
-        current_profile, _ = Profile.objects.get_or_create(
-            user=current_user,
-            defaults={
-                "user": current_user,
-                "username": current_user.email,
-            }
-        )
-        target_profile, _ = Profile.objects.get_or_create(
-            user=target_user,
-            defaults={
-                "user": target_user,
-                "username": target_user.email,
-            }
-        )
+        current_profile = Profile.objects.get(user=current_user)
+        target_profile = Profile.objects.get(user=target_user)
 
         if target_profile in current_profile.following.all():
             return Response({"detail": f"You already have following to "
@@ -193,7 +181,7 @@ class UnFollowView(views.APIView):
         target_user = get_object_or_404(get_user_model(), id=user_id)
 
         current_profile = Profile.objects.get(user=current_user)
-        target_profile = get_object_or_404(Profile, user=target_user)
+        target_profile = Profile.objects.get(Profile, user=target_user)
 
         if target_profile in current_profile.following.all():
             current_user.profile.following.remove(target_profile)
