@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, mixins, status, views
+from rest_framework import viewsets, mixins, status, views, generics
 from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -201,6 +201,21 @@ class UnFollowView(views.APIView):
                             )
 
 
+class MyFollowingView(generics.GenericAPIView, mixins.ListModelMixin):
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        current_user = self.request.user
+        current_profile = get_object_or_404(Profile, user=current_user)
+
+        queryset = current_profile.following.all()
+        return queryset
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+
 class PostViewSet(
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
@@ -243,56 +258,28 @@ class PostViewSet(
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
-        queryset = self.queryset
+
+        queryset = super().get_queryset()
         username = self.request.query_params.get("username")
+        title = self.request.query_params.get("title")
         message = self.request.query_params.get("message")
         hashtag = self.request.query_params.get("hashtag")
-        following = self.request.query_params.get("following")
+
+        filters = Q()
 
         if username:
-            username_ids = (Post.objects.
-                            filter(user__profile__username__icontains=username).
-                            values_list("id")
-                            )
-            queryset = Post.objects.filter(id__in=username_ids)
+            filters &= Q(user__profile__username__icontains=username)
+
+        if title:
+            filters &= Q(title__icontains=title)
 
         if message:
-            message_ids = (Post.objects.
-                           filter(message__icontains=message).
-                           values_list("id")
-                           )
-            queryset = (
-                Post.objects.filter(id__in=message_ids))
+            filters &= Q(message__icontains=message)
 
         if hashtag:
-            hashtag_ids = (Post.objects.
-                           filter(hashtag__icontains=hashtag).
-                           values_list("id")
-                           )
-            queryset = (
-                Post.objects.filter(id__in=hashtag_ids))
+            filters &= Q(hashtag__icontains=hashtag)
 
-        if username and message:
-            queryset = (
-                Post.objects.
-                filter(Q(id__in=username_ids) &
-                       Q(id__in=message_ids))
-            )
-
-        if username and hashtag:
-            queryset = (
-                Post.objects.
-                filter(Q(id__in=username_ids) &
-                       Q(id__in=hashtag_ids))
-            )
-
-        if following:
-            following_ids = (Post.objects.
-                             filter(user__profile__following__isnull=False).
-                             values_list("id")
-                             )
-            queryset = Post.objects.filter(id__in=following_ids)
-
+        queryset = queryset.filter(filters)
         return queryset
 
     def list(self, request, *args, **kwargs):
