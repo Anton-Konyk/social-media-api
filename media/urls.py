@@ -7,6 +7,7 @@ from media.views import (
     SetFollowView,
     UnFollowView,
     PostViewSet,
+    MyFollowingView,
 )
 
 app_name = "media"
@@ -23,5 +24,6 @@ router.register("posts", PostViewSet)
 urlpatterns = [
     path("", include(router.urls)),
     path("set-follow/<int:user_id>/", SetFollowView.as_view(), name="set-follow"),
-    path("unfollow/<int:user_id>/", UnFollowView.as_view(), name="unfollow")
+    path("unfollow/<int:user_id>/", UnFollowView.as_view(), name="unfollow"),
+    path("my-followings/", MyFollowingView.as_view(), name="my-followings")
 ]
