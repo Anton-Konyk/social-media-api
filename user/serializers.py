@@ -49,7 +49,10 @@ class UserSerializer(serializers.ModelSerializer):
             user.save()
 
         if profile_data:
-            profile = instance.profile
+            profile, _ = Profile.objects.get_or_create(
+                user=user,
+                defaults=profile_data
+            )
             for attr, value in profile_data.items():
                 setattr(profile, attr, value)
             profile.save()
