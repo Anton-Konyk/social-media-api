@@ -185,7 +185,7 @@ class UnFollowView(views.APIView):
         target_user = get_object_or_404(get_user_model(), id=user_id)
 
         current_profile = Profile.objects.get(user=current_user)
-        target_profile = Profile.objects.get(Profile, user=target_user)
+        target_profile = Profile.objects.get(user=target_user)
 
         if target_profile in current_profile.following.all():
             current_user.profile.following.remove(target_profile)
@@ -195,8 +195,8 @@ class UnFollowView(views.APIView):
             )
         else:
             return Response({"detail": f"You already have unsubscribed from "
-                             f"the user :{target_profile.username} with id: "
-                             f"{target_profile.id}."},
+                             f"the user :{target_profile.username} with user_id: "
+                             f"{target_profile.user_id}."},
                             status=status.HTTP_200_OK
                             )
 
