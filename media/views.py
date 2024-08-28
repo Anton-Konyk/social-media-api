@@ -156,16 +156,16 @@ class SetFollowView(views.APIView):
 
     def post(self, request, user_id):
         current_user = self.request.user
-        print(f"target_user_id: {user_id}")
         target_user = get_object_or_404(get_user_model(), id=user_id)
-        print(target_user)
+
         current_profile = Profile.objects.get(user=current_user)
         target_profile = Profile.objects.get(user=target_user)
-
+        print(current_profile)
+        print(target_profile)
         if target_profile in current_profile.following.all():
             return Response({"detail": f"You already have following to "
-                             f"the user :{target_profile.username} with id: "
-                             f"{target_profile.id}."},
+                             f"the user :{target_profile.username} with user_id: "
+                             f"{target_profile.user_id}."},
                             status=status.HTTP_200_OK
                             )
         else:
@@ -208,8 +208,22 @@ class MyFollowingView(generics.GenericAPIView, mixins.ListModelMixin):
     def get_queryset(self):
         current_user = self.request.user
         current_profile = get_object_or_404(Profile, user=current_user)
-
         queryset = current_profile.following.all()
+
+        return queryset
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+
+class MySubscribersView(generics.GenericAPIView, mixins.ListModelMixin):
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        current_user = self.request.user
+
+        queryset = Profile.objects.filter(following=current_user.profile)
         return queryset
 
     def get(self, request, *args, **kwargs):
