@@ -37,6 +37,7 @@ class Profile(models.Model):
 
     class Meta:
         verbose_name_plural = "profiles"
+        ordering = ["user_id"]
 
 
 class Post(models.Model):
