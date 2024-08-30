@@ -18,8 +18,10 @@ from media.serializers import (
     PostCreateSerializer,
     UserReactionListSerializer,
     UserReactionCreateSerializer,
+    CommentCreateSerializer,
+    AllCommentsOfPostSerializer,
 )
-from media.models import Profile, Post, UserReaction
+from media.models import Profile, Post, UserReaction, Comment
 
 
 class ProfileViewSet(
@@ -346,3 +348,25 @@ class UserReactionViewSet(
     def list(self, request, *args, **kwargs):
         """Get list of profiles."""
         return super().list(request, *args, **kwargs)
+
+
+class CommentCreationViewSet(
+    mixins.CreateModelMixin,
+    GenericViewSet
+):
+    serializer_class = CommentCreateSerializer
+    queryset = UserReaction.objects.all()
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Comment.objects.filter(user=user)
+        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class AllCommentsOfPostView(GenericViewSet, mixins.RetrieveModelMixin):
+    serializer_class = AllCommentsOfPostSerializer
+    queryset = Post.objects.all()
+    permission_classes = [IsAuthenticated]

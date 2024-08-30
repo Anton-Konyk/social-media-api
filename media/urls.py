@@ -10,6 +10,8 @@ from media.views import (
     MyFollowingView,
     MySubscribersView,
     UserReactionViewSet,
+    CommentCreationViewSet,
+    AllCommentsOfPostView,
 )
 
 app_name = "media"
@@ -26,6 +28,12 @@ router.register(
     "reactions",
     UserReactionViewSet,
     basename="reactions"
+)
+router.register("comments", CommentCreationViewSet)
+router.register(
+    "all_comments",
+    AllCommentsOfPostView,
+    basename="all-comments"
 )
 
 urlpatterns = [

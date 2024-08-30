@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from media.models import Profile, Post, UserReaction
+from media.models import Profile, Post, UserReaction, Comment
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -132,3 +132,46 @@ class UserReactionCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserReaction
         fields = ("id", "post", "reaction")
+
+
+class CommentCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ("id", "user", "comment", "post")
+        extra_kwargs = {"user": {"read_only": True}}
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    username = serializers.SlugRelatedField(
+        source="user.profile",
+        read_only=True,
+        many=False,
+        slug_field="username"
+    )
+
+    class Meta:
+        model = Comment
+        fields = ("id", "username", "comment", "post", "created_at")
+
+
+class AllCommentsOfPostSerializer(serializers.ModelSerializer):
+    post_username = serializers.SlugRelatedField(
+        source="post.user.profile",
+        read_only=True,
+        many=False,
+        slug_field="username"
+    )
+    comments = CommentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Post
+        fields = (
+            "id",
+            "post_username",
+            "title",
+            "message",
+            "image",
+            "hashtag",
+            "scheduled_publish_time",
+            "comments",
+        )
