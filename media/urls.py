@@ -9,6 +9,7 @@ from media.views import (
     PostViewSet,
     MyFollowingView,
     MySubscribersView,
+    UserReactionViewSet,
 )
 
 app_name = "media"
@@ -21,6 +22,11 @@ router.register(
     basename="profile-following-to-me"
 )
 router.register("posts", PostViewSet)
+router.register(
+    "reactions",
+    UserReactionViewSet,
+    basename="reactions"
+)
 
 urlpatterns = [
     path("", include(router.urls)),

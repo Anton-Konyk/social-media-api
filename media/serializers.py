@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from media.models import Profile, Post
+from media.models import Profile, Post, UserReaction
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -90,3 +90,45 @@ class PostCreateSerializer(serializers.ModelSerializer):
             "scheduled_publish_time",
         )
         extra_kwargs = {"user": {"read_only": True}}
+
+
+class UserReactionListSerializer(serializers.ModelSerializer):
+    user = serializers.SlugRelatedField(
+        read_only=True,
+        many=False,
+        slug_field="email"
+    )
+    username = serializers.SlugRelatedField(
+        source="user.profile",
+        read_only=True,
+        many=False,
+        slug_field="username"
+    )
+    title = serializers.SlugRelatedField(
+        source="post",
+        read_only=True,
+        many=False,
+        slug_field="title"
+    )
+    post_username = serializers.SlugRelatedField(
+        source="post.user.profile",
+        read_only=True,
+        many=False,
+        slug_field="username"
+    )
+    message = serializers.SlugRelatedField(
+        source="post",
+        read_only=True,
+        many=False,
+        slug_field="message"
+    )
+
+    class Meta:
+        model = UserReaction
+        fields = ("id", "user", "username", "post_username", "title", "message", "reaction")
+
+
+class UserReactionCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserReaction
+        fields = ("id", "post", "reaction")

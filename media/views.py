@@ -3,6 +3,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, mixins, status, views, generics
 from rest_framework.decorators import action, permission_classes
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -15,8 +16,10 @@ from media.serializers import (
     PostListSerializer,
     PostImageSerializer,
     PostCreateSerializer,
+    UserReactionListSerializer,
+    UserReactionCreateSerializer,
 )
-from media.models import Profile, Post
+from media.models import Profile, Post, UserReaction
 
 
 class ProfileViewSet(
@@ -292,6 +295,52 @@ class PostViewSet(
 
         if hashtag:
             filters &= Q(hashtag__icontains=hashtag)
+
+        queryset = queryset.filter(filters)
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        """Get list of profiles."""
+        return super().list(request, *args, **kwargs)
+
+
+class UserReactionViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    GenericViewSet
+):
+    # queryset = UserReaction.objects.filter(user=request.user)
+    serializer_class = UserReactionListSerializer
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        post = serializer.validated_data["post"]
+        if post.user_id == user.id:
+            raise ValidationError({"detail": "You cannot like your own post."})
+
+        serializer.save(user=user)
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return UserReactionListSerializer
+        if self.action == "create":
+            return UserReactionCreateSerializer
+        return super().get_serializer_class()
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = UserReaction.objects.filter(user=user)
+        # queryset = super().get_queryset()
+        post = self.request.query_params.get("post")
+        reaction = self.request.query_params.get("reaction")
+
+        filters = Q()
+
+        if post:
+            filters &= Q(post__user=post)
+
+        if reaction:
+            filters &= Q(reaction__icontains=reaction)
 
         queryset = queryset.filter(filters)
         return queryset
