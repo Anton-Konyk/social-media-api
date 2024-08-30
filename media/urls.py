@@ -38,8 +38,24 @@ router.register(
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("set-follow/<int:user_id>/", SetFollowView.as_view(), name="set-follow"),
-    path("unfollow/<int:user_id>/", UnFollowView.as_view(), name="unfollow"),
-    path("my-followings/", MyFollowingView.as_view(), name="my-followings"),
-    path("my-subscribers/", MySubscribersView.as_view(), name="my-subscribers"),
+    path(
+        "set-follow/<int:user_id>/",
+        SetFollowView.as_view(),
+        name="set-follow"
+    ),
+    path(
+        "unfollow/<int:user_id>/",
+        UnFollowView.as_view(),
+        name="unfollow"
+    ),
+    path(
+        "my-followings/",
+        MyFollowingView.as_view(),
+        name="my-followings"
+    ),
+    path(
+        "my-subscribers/",
+        MySubscribersView.as_view(),
+        name="my-subscribers"
+    ),
 ]

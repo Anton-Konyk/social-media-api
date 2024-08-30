@@ -6,7 +6,10 @@ from media.models import Profile
 
 
 class UserSerializer(serializers.ModelSerializer):
-    profile_pic = serializers.ImageField(source="profile.profile_pic", required=False)
+    profile_pic = serializers.ImageField(
+        source="profile.profile_pic",
+        required=False
+    )
     username = serializers.CharField(source="profile.username")
     bio = serializers.CharField(source="profile.bio", required=False)
 
@@ -34,7 +37,7 @@ class UserSerializer(serializers.ModelSerializer):
         profile_data = validated_data.pop("profile", None)
 
         user = get_user_model().objects.create_user(**validated_data)
-        profile = Profile.objects.create(user=user, **profile_data)
+        Profile.objects.create(user=user, **profile_data)
 
         return user
 
