@@ -1,8 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, mixins, status, views, generics
-from rest_framework.decorators import action, permission_classes
+from rest_framework import mixins, status, views, generics
+from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -57,8 +57,13 @@ class ProfileViewSet(
         instance = self.get_object()
         permission = IsOwnerProfile()
         if not permission.has_object_permission(request, self, instance):
-            return Response({"detail": "You do not have permission to perform this action."},
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {
+                      "detail":
+                      "You do not have permission to perform this action."
+                      },
+                status=status.HTTP_403_FORBIDDEN
+            )
         return super().update(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
@@ -169,8 +174,8 @@ class SetFollowView(views.APIView):
         print(target_profile)
         if target_profile in current_profile.following.all():
             return Response({"detail": f"You already have following to "
-                             f"the user :{target_profile.username} with user_id: "
-                             f"{target_profile.user_id}."},
+                             f"the user :{target_profile.username} with "
+                             f"user_id: {target_profile.user_id}."},
                             status=status.HTTP_200_OK
                             )
         else:
@@ -200,15 +205,14 @@ class UnFollowView(views.APIView):
             )
         else:
             return Response({"detail": f"You already have unsubscribed from "
-                             f"the user :{target_profile.username} with user_id: "
-                             f"{target_profile.user_id}."},
+                             f"the user :{target_profile.username} "
+                             f"with user_id: {target_profile.user_id}."},
                             status=status.HTTP_200_OK
                             )
 
 
 class MyFollowingView(generics.GenericAPIView, mixins.ListModelMixin):
     serializer_class = ProfileSerializer
-    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         current_user = self.request.user
@@ -223,7 +227,6 @@ class MyFollowingView(generics.GenericAPIView, mixins.ListModelMixin):
 
 class MySubscribersView(generics.GenericAPIView, mixins.ListModelMixin):
     serializer_class = ProfileSerializer
-    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         current_user = self.request.user
@@ -369,4 +372,3 @@ class CommentCreationViewSet(
 class AllCommentsOfPostView(GenericViewSet, mixins.RetrieveModelMixin):
     serializer_class = AllCommentsOfPostSerializer
     queryset = Post.objects.all()
-    permission_classes = [IsAuthenticated]

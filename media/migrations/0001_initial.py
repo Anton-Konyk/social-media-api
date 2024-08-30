@@ -29,7 +29,11 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("title", models.CharField(max_length=255)),
-                ("message", models.TextField(blank=True, max_length=500, null=True)),
+                ("message", models.TextField(
+                    blank=True,
+                    max_length=500,
+                    null=True
+                )),
                 (
                     "image",
                     models.ImageField(
@@ -38,8 +42,15 @@ class Migration(migrations.Migration):
                         upload_to=media.models.movie_image_file_path,
                     ),
                 ),
-                ("hashtag", models.CharField(blank=True, max_length=255, null=True)),
-                ("scheduled_publish_time", models.DateTimeField(blank=True, null=True)),
+                ("hashtag", models.CharField(
+                    blank=True,
+                    max_length=255,
+                    null=True
+                )),
+                ("scheduled_publish_time", models.DateTimeField(
+                    blank=True,
+                    null=True
+                )),
                 ("is_published", models.BooleanField(default=False)),
                 (
                     "user",
@@ -66,7 +77,11 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("comment", models.TextField(blank=True, max_length=500, null=True)),
+                ("comment", models.TextField(
+                    blank=True,
+                    max_length=500,
+                    null=True
+                )),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 (
                     "user",
@@ -112,11 +127,16 @@ class Migration(migrations.Migration):
                         upload_to=media.models.movie_image_file_path,
                     ),
                 ),
-                ("bio", models.CharField(blank=True, max_length=400, null=True)),
+                ("bio", models.CharField(
+                    blank=True,
+                    max_length=400,
+                    null=True)),
                 (
                     "following",
                     models.ManyToManyField(
-                        blank=True, related_name="followers", to="media.profile"
+                        blank=True,
+                        related_name="followers",
+                        to="media.profile"
                     ),
                 ),
             ],
