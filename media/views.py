@@ -309,7 +309,6 @@ class UserReactionViewSet(
     mixins.ListModelMixin,
     GenericViewSet
 ):
-    # queryset = UserReaction.objects.filter(user=request.user)
     serializer_class = UserReactionListSerializer
 
     def perform_create(self, serializer):
@@ -330,7 +329,6 @@ class UserReactionViewSet(
     def get_queryset(self):
         user = self.request.user
         queryset = UserReaction.objects.filter(user=user)
-        # queryset = super().get_queryset()
         post = self.request.query_params.get("post")
         reaction = self.request.query_params.get("reaction")
 
