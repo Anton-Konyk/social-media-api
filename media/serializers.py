@@ -125,7 +125,15 @@ class UserReactionListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserReaction
-        fields = ("id", "user", "username", "post_username", "title", "message", "reaction")
+        fields = (
+            "id",
+            "user",
+            "username",
+            "post_username",
+            "title",
+            "message",
+            "reaction"
+        )
 
 
 class UserReactionCreateSerializer(serializers.ModelSerializer):
