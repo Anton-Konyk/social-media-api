@@ -9,11 +9,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         many=False,
         slug_field="email"
     )
-    following = serializers.SlugRelatedField(
-        read_only=True,
-        many=True,
-        slug_field="user.email"
-    )
+    following = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
@@ -26,25 +22,27 @@ class ProfileSerializer(serializers.ModelSerializer):
         )
         extra_kwargs = {"profile_pic": {"read_only": True}}
 
+    def get_following(self, obj) -> list[str]:
+        return [f.user.email for f in obj.following.all()]
+
 
 class ProfileImageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ("id", "profile_pic")
+        fields = ("user_id", "profile_pic")
 
 
 class ProfileFollowingToMeSerializer(serializers.ModelSerializer):
-    following = serializers.SlugRelatedField(
-        read_only=True,
-        many=True,
-        slug_field="user.email"
-    )
+    following = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
         fields = ("username", "following")
         ordering = ["username"]
+
+    def get_following(self, obj) -> list[str]:
+        return [f.user.email for f in obj.following.all()]
 
 
 class PostListSerializer(serializers.ModelSerializer):
@@ -170,7 +168,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class AllCommentsOfPostSerializer(serializers.ModelSerializer):
     post_username = serializers.SlugRelatedField(
-        source="post.user.profile",
+        source="user.profile",
         read_only=True,
         many=False,
         slug_field="username"

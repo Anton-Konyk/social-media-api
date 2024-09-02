@@ -18,6 +18,10 @@ Including another URLconf
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
+from drf_spectacular.views import (
+    SpectacularSwaggerView,
+    SpectacularAPIView
+)
 
 from social_media_api import settings
 
@@ -25,4 +29,10 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/v1/user/", include("user.urls", namespace="user")),
     path("api/v1/social-media/", include("media.urls"), name="social-media"),
+    path("api/v1/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path(
+         "api/v1/doc/swagger/",
+         SpectacularSwaggerView.as_view(url_name="schema"),
+         name="swagger-ui"
+         ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

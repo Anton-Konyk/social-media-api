@@ -1,12 +1,20 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
-from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import OutstandingToken, BlacklistedToken
+from rest_framework_simplejwt.tokens import (
+    OutstandingToken,
+    BlacklistedToken
+)
 
-from user.serializers import UserSerializer, AuthTokenSerializer
+from user.serializers import (
+    UserSerializer,
+    AuthTokenSerializer,
+    LogoutSerializer
+)
 
 
 class CreateUserView(generics.CreateAPIView):
@@ -27,9 +35,14 @@ class ManageUserView(generics.RetrieveUpdateAPIView):
         return self.request.user
 
 
-class LogoutView(APIView):
+class LogoutView(GenericAPIView):
     permission_classes = (IsAuthenticated,)
+    serializer_class = LogoutSerializer
 
+    @extend_schema(
+        request=None,
+        responses={204: LogoutSerializer, 400: LogoutSerializer},
+    )
     def post(self, request):
         try:
             tokens = OutstandingToken.objects.filter(user=self.request.user)

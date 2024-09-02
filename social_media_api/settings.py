@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "rest_framework_simplejwt.token_blacklist",
+    "drf_spectacular",
 ]
 
 AUTH_USER_MODEL = "user.User"
@@ -148,9 +149,8 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
-        # "media.permissions.IsAdminOrIfAuthenticatedReadOnly",
     ],
-    # "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle"
@@ -166,6 +166,19 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
+}
+
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Social Media API",
+    "DESCRIPTION": "Documentation for RESTful API for a social media platform.",
+    "VERSION": "1.0.0",
+    "SERVER_INCLUDE_SCHEMA": False,
+    "SWAGGER_UI_SETTINGS":  {
+        "deepLinking": True,
+        "defaultModelsExpanDepth": 2,
+        "defaultModelExpanDepth": 2,
+    },
 }
 
 INTERNAL_IPS = ["127.0.0.1",]
