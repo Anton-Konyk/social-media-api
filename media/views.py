@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import mixins, status, views, generics
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -120,23 +121,30 @@ class ProfileViewSet(
 
         return queryset
 
-    # @extend_schema(
-    #     parameters=[
-    #         OpenApiParameter(
-    #             "source",
-    #             type={"type": "string", "items": {"type": "name"}},
-    #             description="Filter by source station id ex. ?source=Berlin",
-    #
-    #         ),
-    #         OpenApiParameter(
-    #             "destination",
-    #             type={"type": "string", "items": {"type": "name"}},
-    #             description="Filter by destination station id ex. "
-    #                         "?destination=Vien",
-    #
-    #         ),
-    #     ]
-    # )
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "username",
+                type={"type": "string", "items": {"type": "username"}},
+                description="Filter by username incentive. Ex. ?username=admin",
+
+            ),
+            OpenApiParameter(
+                "bio",
+                type={"type": "string", "items": {"type": "bio"}},
+                description="Filter by bio incentive. Ex. "
+                            "?bio=hard",
+
+            ),
+            OpenApiParameter(
+                "following",
+                type={"type": "list", "items": {"type": "number"}},
+                description="Filter by user_id following. Ex. "
+                            "?following=1,2",
+
+            ),
+        ]
+    )
     def list(self, request, *args, **kwargs):
         """Get list of profiles."""
         return super().list(request, *args, **kwargs)
@@ -244,7 +252,7 @@ class PostViewSet(
     mixins.ListModelMixin,
     GenericViewSet
 ):
-    queryset = Post.objects.all()
+    queryset = Post.objects.filter(is_published=True)
     serializer_class = PostListSerializer
 
     @action(
@@ -304,8 +312,39 @@ class PostViewSet(
         queryset = queryset.filter(filters)
         return queryset
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "username",
+                type={"type": "string", "items": {"type": "username"}},
+                description="Filter by username incentive. Ex. ?username=admin",
+
+            ),
+            OpenApiParameter(
+                "title",
+                type={"type": "string", "items": {"type": "title"}},
+                description="Filter by title incentive. Ex. "
+                            "?title=about",
+
+            ),
+            OpenApiParameter(
+                "message",
+                type={"type": "string", "items": {"type": "message"}},
+                description="Filter by message incentive. Ex. "
+                            "?message=info",
+
+            ),
+            OpenApiParameter(
+                "hashtag",
+                type={"type": "string", "items": {"type": "hashtag"}},
+                description="Filter by hashtag incentive. Ex. "
+                            "?hashtag=friends",
+
+            ),
+        ]
+    )
     def list(self, request, *args, **kwargs):
-        """Get list of profiles."""
+        """Get list of posts."""
         return super().list(request, *args, **kwargs)
 
 
@@ -348,8 +387,25 @@ class UserReactionViewSet(
         queryset = queryset.filter(filters)
         return queryset
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "post",
+                type={"type": "string", "items": {"type": "number"}},
+                description="Filter by post ID. Ex. ?post=1",
+
+            ),
+            OpenApiParameter(
+                "reaction",
+                type={"type": "string", "items": {"type": "reaction"}},
+                description="Filter by reaction incentive (D, L). Ex. "
+                            "?title=L",
+
+            ),
+        ]
+    )
     def list(self, request, *args, **kwargs):
-        """Get list of profiles."""
+        """Get list of user reactions."""
         return super().list(request, *args, **kwargs)
 
 

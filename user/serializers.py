@@ -99,3 +99,7 @@ class AuthTokenSerializer(serializers.Serializer):
 
         attrs['user'] = user
         return attrs
+
+
+class LogoutSerializer(serializers.Serializer):
+    detail = serializers.CharField(read_only=True)
