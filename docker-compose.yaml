@@ -1,4 +1,7 @@
 services:
+  redis:
+    image: redis:7-alpine
+
   social_media:
     build:
       context: .
@@ -26,6 +29,49 @@ services:
       - "5432:5432"
     volumes:
       - my_db:$PGDATA
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+#    image: django_celery_example_celery_worker
+    command: "celery -A social_media_api worker -l INFO"
+    depends_on:
+      - social_media
+      - redis
+      - db
+    restart: on-failure
+    env_file:
+      - .env
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >
+      sh -c "python manage.py wait_for_db &&
+      celery -A social_media_api beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+    depends_on:
+      - social_media
+      - redis
+      - db
+    restart: on-failure
+    env_file:
+      - .env
+
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5555:5555"
+    command: "celery -A social_media_api flower --address=0.0.0.0"
+    depends_on:
+       - celery_worker
+    env_file:
+      - .env
+
 volumes:
   my_db:
   my_media:
