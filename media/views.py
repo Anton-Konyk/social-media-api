@@ -259,8 +259,7 @@ class PostViewSet(
     GenericViewSet
 ):
     """Manage user's posts (create, retrieve, list with filters)."""
-    # queryset = Post.objects.filter(is_published=True)
-    queryset = Post.objects.all()
+    queryset = Post.objects.filter(is_published=True)
     serializer_class = PostListSerializer
 
     @action(
