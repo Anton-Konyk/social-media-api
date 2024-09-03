@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
+    "django_celery_beat",
 ]
 
 AUTH_USER_MODEL = "user.User"
@@ -192,5 +193,12 @@ SPECTACULAR_SETTINGS = {
         "defaultModelExpanDepth": 2,
     },
 }
+
+# Celery Configuration Options
+CELERY_BROKER_URL = "redis://redis:6379/0"
+CELERY_RESULT_BACKEND = "redis://redis:6379/0"
+CELERY_TIMEZONE = "Europe/Bratislava"
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
 
 INTERNAL_IPS = ["127.0.0.1",]
