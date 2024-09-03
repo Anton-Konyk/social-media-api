@@ -36,6 +36,7 @@ class ManageUserView(generics.RetrieveUpdateAPIView):
 
 
 class LogoutView(GenericAPIView):
+    """Logout user with moving token to blacklist"""
     permission_classes = (IsAuthenticated,)
     serializer_class = LogoutSerializer
 

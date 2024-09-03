@@ -32,6 +32,7 @@ class ProfileViewSet(
     mixins.ListModelMixin,
     GenericViewSet
 ):
+    """Get create, retrieve, update and list with filters a user profile"""
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
 
@@ -154,6 +155,7 @@ class ProfileFollowingToMeViewSet(
     mixins.ListModelMixin,
     GenericViewSet
 ):
+    """Return list of profiles that follow me."""
     serializer_class = ProfileFollowingToMeSerializer
 
     def get_queryset(self):
@@ -170,6 +172,7 @@ class ProfileFollowingToMeViewSet(
 
 
 class SetFollowView(views.APIView):
+    """Set user's followed"""
     serializer_class = ProfileSerializer
 
     def post(self, request, user_id):
@@ -196,6 +199,7 @@ class SetFollowView(views.APIView):
 
 
 class UnFollowView(views.APIView):
+    """Unfollow (unsubscribe) user"""
     serializer_class = ProfileSerializer
 
     def post(self, request, user_id):
@@ -220,6 +224,7 @@ class UnFollowView(views.APIView):
 
 
 class MyFollowingView(generics.GenericAPIView, mixins.ListModelMixin):
+    """Get list of user's following"""
     serializer_class = ProfileSerializer
 
     def get_queryset(self):
@@ -234,6 +239,7 @@ class MyFollowingView(generics.GenericAPIView, mixins.ListModelMixin):
 
 
 class MySubscribersView(generics.GenericAPIView, mixins.ListModelMixin):
+    """Get list of user's subscribers."""
     serializer_class = ProfileSerializer
 
     def get_queryset(self):
@@ -252,6 +258,7 @@ class PostViewSet(
     mixins.ListModelMixin,
     GenericViewSet
 ):
+    """Manage user's posts (create, retrieve, list with filters)."""
     queryset = Post.objects.filter(is_published=True)
     serializer_class = PostListSerializer
 
@@ -353,6 +360,7 @@ class UserReactionViewSet(
     mixins.ListModelMixin,
     GenericViewSet
 ):
+    """Get create and list user's reactions with filters."""
     serializer_class = UserReactionListSerializer
 
     def perform_create(self, serializer):
@@ -413,6 +421,7 @@ class CommentCreationViewSet(
     mixins.CreateModelMixin,
     GenericViewSet
 ):
+    """Create a new comment."""
     serializer_class = CommentCreateSerializer
     queryset = UserReaction.objects.all()
 
@@ -426,5 +435,6 @@ class CommentCreationViewSet(
 
 
 class AllCommentsOfPostView(GenericViewSet, mixins.RetrieveModelMixin):
+    """Shows (retrieve) all comments of post."""
     serializer_class = AllCommentsOfPostSerializer
     queryset = Post.objects.all()
