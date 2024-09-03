@@ -20,6 +20,8 @@ djangorestframework==3.15.2
 djangorestframework-simplejwt==5.3.1
 drf-spectacular==0.27.2
 flake8==7.0.0
+flower==2.0.1
+humanize==4.10.0
 inflection==0.5.1
 jsonschema==4.23.0
 jsonschema-specifications==2023.12.1
@@ -30,6 +32,7 @@ packaging==24.0
 pathspec==0.12.1
 pillow==10.4.0
 platformdirs==4.2.2
+prometheus_client==0.20.0
 prompt_toolkit==3.0.47
 psycopg==3.2.1
 psycopg-binary==3.2.1
@@ -39,6 +42,7 @@ PyJWT==2.9.0
 python-crontab==3.2.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
+pytz==2024.1
 PyYAML==6.0.2
 redis==5.0.8
 referencing==0.35.1
@@ -46,6 +50,7 @@ rest-framework-simplejwt==0.0.2
 rpds-py==0.20.0
 six==1.16.0
 sqlparse==0.4.4
+tornado==6.4.1
 typing_extensions==4.12.2
 tzdata==2023.4
 uritemplate==4.1.1
