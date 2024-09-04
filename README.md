@@ -1,7 +1,8 @@
 # social-media-api
 
 API service for social media system written on DRF
-(using  Django REST framework, Docker, Celery, Flower)
+(using  Django REST framework, Docker, Celery, Redis,
+PostgreSQL, Flower)
 in which Users can create profiles, follow other users,
 create and retrieve posts, manage likes and comments, 
 and perform basic social media actions. 
