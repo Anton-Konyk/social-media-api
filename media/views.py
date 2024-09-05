@@ -127,7 +127,8 @@ class ProfileViewSet(
             OpenApiParameter(
                 "username",
                 type={"type": "string", "items": {"type": "username"}},
-                description="Filter by username incentive. Ex. ?username=admin",
+                description="Filter by username incentive. "
+                            "Ex. ?username=admin",
 
             ),
             OpenApiParameter(
@@ -324,7 +325,8 @@ class PostViewSet(
             OpenApiParameter(
                 "username",
                 type={"type": "string", "items": {"type": "username"}},
-                description="Filter by username incentive. Ex. ?username=admin",
+                description="Filter by username incentive. "
+                            "Ex. ?username=admin",
 
             ),
             OpenApiParameter(

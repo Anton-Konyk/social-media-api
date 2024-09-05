@@ -12,6 +12,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name="profile",
-            options={"ordering": ["user_id"], "verbose_name_plural": "profiles"},
+            options={"ordering": ["user_id"],
+                     "verbose_name_plural": "profiles"},
         ),
     ]
