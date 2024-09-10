@@ -25,7 +25,7 @@ http://127.0.0.1:8001/api/v1/doc/swagger/  # API documentation
 
 If you need create superuser account:
 # After docker-compose up
-docker exec -it social_media_api-social_media-1 bash
+docker exec -it social-media-api-social_media-1 bash
 python manage.py createsuperuser
 # after creating superuser
 exit
