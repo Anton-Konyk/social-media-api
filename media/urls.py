@@ -14,7 +14,6 @@ from media.views import (
     AllCommentsOfPostView,
 )
 
-app_name = "media"
 
 router = routers.DefaultRouter()
 router.register("profiles", ProfileViewSet)
@@ -59,3 +58,5 @@ urlpatterns = [
         name="my-subscribers"
     ),
 ]
+
+app_name = "media"
