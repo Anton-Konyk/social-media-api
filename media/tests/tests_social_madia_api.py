@@ -1,3 +1,4 @@
+import time
 import os
 import tempfile
 
@@ -5,17 +6,33 @@ from PIL import Image
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
+import pytz
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from media.models import Profile, movie_image_file_path
+from media.models import Profile, movie_image_file_path, Post
+from media.serializers import PostListSerializer
+from media.tasks import publishing_post
 from user.serializers import UserSerializer
 
 USER_URL = reverse("user:create")
 POSTS_URL = reverse("media:post-list")
 LOGOUT_URL = reverse("user:logout")
 TOKEN_REFRESH_URL = reverse("user:token_refresh")
+
+
+def sample_post(user, **params):
+    defaults = {
+        "title": "Post1",
+        "message": "This is a test post 1",
+        "hashtag": "friends",
+        "scheduled_publish_time": timezone.now()
+    }
+    defaults.update(params)
+    defaults["user"] = user
+    return Post.objects.create(**defaults)
 
 
 class ProfileCreateTests(TestCase):
@@ -27,7 +44,7 @@ class ProfileCreateTests(TestCase):
             "username": "Admin_test_user",
             "profile_pic": "",
             "bio": "This is a test bio"
-            }
+        }
 
     def test_create_user_with_profile(self):
         """Test create user with profile"""
@@ -77,7 +94,6 @@ class UnauthenticatedSocialMediaApiTests(TestCase):
 class LogoutViewTests(APITestCase):
 
     def setUp(self):
-
         self.user = get_user_model().objects.create_user(
             email="testuser@example.com",
             password="test_password12"
@@ -101,3 +117,54 @@ class LogoutViewTests(APITestCase):
         )
         self.assertEqual(refresh_response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(refresh_response.data["detail"], "Token is blacklisted")
+
+
+class AuthenticatedSocialMediaApiTests(TestCase):
+
+    def setUp(self) -> None:
+        self.client = APIClient()
+        self.user_data = {
+            "email": "test@test.com",
+            "password": "test_password12",
+            "username": "Admin_user",
+            "profile_pic": "",
+            "bio": "This is a test bio"
+        }
+
+        response = self.client.post(USER_URL, self.user_data)
+        user = get_user_model().objects.get(email=self.user_data["email"])
+        self.client.force_authenticate(user=user)
+
+    def test_post_list(self):
+        """Test post list"""
+        user = get_user_model().objects.get(email=self.user_data["email"])
+        post1 = sample_post(user=user)
+        post2 = sample_post(user=user, title="Post2", message="This is a test post 2")
+        post3 = sample_post(user=user, title="Post3", message="This is a test post 3")
+        publishing_post()
+        res = self.client.get(POSTS_URL)
+        posts = Post.objects.all()
+        serializer = PostListSerializer(posts, many=True)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data["results"], serializer.data)
+
+    def test_post_time_not_publishing(self):
+        """Test post time not publishing"""
+        user = get_user_model().objects.get(email=self.user_data["email"])
+        future_time = timezone.now() + timezone.timedelta(minutes=1)
+        post1 = sample_post(
+            user=user,
+            scheduled_publish_time=future_time
+        )
+        post2 = sample_post(
+            user=user,
+            title="Post2",
+            message="This is a test post 2",
+            scheduled_publish_time=future_time
+        )
+        publishing_post()
+        res = self.client.get(POSTS_URL)
+        posts = Post.objects.all()
+        serializer = PostListSerializer(posts, many=True)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertNotIn(res.data["results"], serializer.data)
