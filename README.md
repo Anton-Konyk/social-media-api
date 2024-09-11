@@ -31,6 +31,11 @@ python manage.py createsuperuser
 exit
 http://127.0.0.1:8001/api/v1/user/register/
 ![register.png](register.png)
+
+You need to visite to admin consol:
+http://127.0.0.1:8001/admin/django_celery_beat/periodictask/
+and add task periodic task media.task.publishing_post 
+with your scheduler
 ```
 
 ## Features
