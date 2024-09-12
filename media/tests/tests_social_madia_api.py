@@ -1,4 +1,3 @@
-import time
 import os
 import tempfile
 
@@ -7,20 +6,20 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
-import pytz
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from media.models import Profile, movie_image_file_path, Post
+from media.models import Profile,  Post
 from media.serializers import PostListSerializer
 from media.tasks import publishing_post
-from user.serializers import UserSerializer
+
 
 USER_URL = reverse("user:create")
 POSTS_URL = reverse("media:post-list")
 LOGOUT_URL = reverse("user:logout")
 TOKEN_REFRESH_URL = reverse("user:token_refresh")
+REACTION_CREATE_URL = reverse("media:reactions-list")
 
 
 def sample_post(user, **params):
@@ -197,3 +196,67 @@ class AuthenticatedSocialMediaApiTests(TestCase):
         self.assertNotIn(
             serializer_3.data, res.data["results"]
         )
+
+
+class UserReactionSocialMediaApiTests(TestCase):
+
+    def setUp(self) -> None:
+        self.client = APIClient()
+        self.user_data1 = {
+            "email": "test@test.com",
+            "password": "test_password12",
+            "username": "Admin",
+            "profile_pic": "",
+            "bio": "This is a test bio"
+        }
+
+        response = self.client.post(USER_URL, self.user_data1)
+        admin = get_user_model().objects.get(email=self.user_data1["email"])
+        self.client.force_authenticate(user=admin)
+        self.post1_admin = sample_post(user=admin)
+        publishing_post()
+
+        self.user_data2 = {
+            "email": "test2@test.com",
+            "password": "test_password13",
+            "username": "User",
+            "profile_pic": "",
+            "bio": "This is a test2 about User"
+        }
+        response2 = self.client.post(USER_URL, self.user_data2)
+        user = get_user_model().objects.get(email=self.user_data2["email"])
+        self.client.force_authenticate(user=user)
+
+    def test_create_reaction(self):
+        """Test creating a reaction on the non-own post"""
+        payload = {
+            "post": self.post1_admin.id,
+            "reaction": "L"
+        }
+        res = self.client.post(
+            REACTION_CREATE_URL,
+            payload,
+            format='json'
+        )
+        self.assertEqual(res.status_code, 201)
+        self.assertEqual(res.data['post'], payload['post'])
+        self.assertEqual(res.data['reaction'], payload['reaction'])
+
+    def test_double_creation_reaction(self):
+        """Test double creation of reaction for the post which already has reaction"""
+        payload = {
+            "post": self.post1_admin.id,
+            "reaction": "L"
+        }
+        res = self.client.post(
+            REACTION_CREATE_URL,
+            payload,
+            format='json'
+        )
+        res2 = self.client.post(
+            REACTION_CREATE_URL,
+            payload,
+            format='json'
+        )
+        self.assertEqual(res2.status_code, 400)
+        self.assertEqual(res2.data["detail"], "You have already reacted to this post.")
