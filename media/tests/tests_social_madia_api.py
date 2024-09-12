@@ -168,3 +168,32 @@ class AuthenticatedSocialMediaApiTests(TestCase):
         serializer = PostListSerializer(posts, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertNotIn(res.data["results"], serializer.data)
+
+    def test_filter_posts_by_fields(self):
+        """Test filtering posts by fields:
+        username, title, message, hashtag"""
+        user = get_user_model().objects.get(email=self.user_data["email"])
+        post1 = sample_post(user=user, title="Post1", message="This is a test post1")
+        post2 = sample_post(user=user, title="Post2", message="This is a test post2")
+        post3 = sample_post(user=user, title="Post3", message="This is a test post3")
+        publishing_post()
+        res = self.client.get(POSTS_URL, {"username": "admin", "title": "Post2"})
+        posts = Post.objects.all()
+        post1.is_published = True
+        post1.save()
+        post2.is_published = True
+        post2.save()
+        post3.is_published = True
+        post3.save()
+        serializer_1 = (PostListSerializer(post1))
+        serializer_2 = (PostListSerializer(post2))
+        serializer_3 = (PostListSerializer(post3))
+        self.assertIn(
+            serializer_2.data, res.data["results"]
+        )
+        self.assertNotIn(
+            serializer_1.data, res.data["results"]
+        )
+        self.assertNotIn(
+            serializer_3.data, res.data["results"]
+        )
