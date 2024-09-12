@@ -70,6 +70,7 @@ class Post(models.Model):
 
     class Meta:
         verbose_name_plural = "posts"
+        ordering = ["scheduled_publish_time"]
 
 
 class Comment(models.Model):
