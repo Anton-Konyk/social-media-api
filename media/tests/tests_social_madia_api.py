@@ -47,7 +47,7 @@ class ProfileCreateTests(TestCase):
 
     def test_create_user_with_profile(self):
         """Test create user with profile"""
-        response = self.client.post(USER_URL, self.user_data)
+        self.client.post(USER_URL, self.user_data)
 
         user = get_user_model().objects.get(email=self.user_data["email"])
 
@@ -64,7 +64,10 @@ class ProfileCreateTests(TestCase):
             img.save(ntf, format="JPEG")
             ntf.seek(0)
             data_with_image = {**self.user_data, "profile_pic": ntf}
-            response = self.client.post(USER_URL, data_with_image, format="multipart")
+            response = self.client.post(
+                USER_URL, data_with_image,
+                format="multipart"
+            )
         user = get_user_model().objects.get(email=self.user_data["email"])
         profile = Profile.objects.get(user=user)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -74,7 +77,10 @@ class ProfileCreateTests(TestCase):
     def test_create_user_with_image_bad_request(self):
         """Test uploading an invalid image"""
         data_with_image = {**self.user_data, "profile_pic": "not image"}
-        response = self.client.post(USER_URL, data_with_image, format="multipart")
+        response = self.client.post(
+            USER_URL, data_with_image,
+            format="multipart"
+        )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -100,7 +106,9 @@ class LogoutViewTests(APITestCase):
 
         self.refresh = RefreshToken.for_user(self.user)
         self.client = APIClient()
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.refresh.access_token}")
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f"Bearer {self.refresh.access_token}"
+        )
 
     def test_logout_success(self):
         """Test logout"""
@@ -114,8 +122,14 @@ class LogoutViewTests(APITestCase):
             TOKEN_REFRESH_URL,
             {"refresh": str(self.refresh)},
         )
-        self.assertEqual(refresh_response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(refresh_response.data["detail"], "Token is blacklisted")
+        self.assertEqual(
+            refresh_response.status_code,
+            status.HTTP_401_UNAUTHORIZED
+        )
+        self.assertEqual(
+            refresh_response.data["detail"],
+            "Token is blacklisted"
+        )
 
 
 class AuthenticatedSocialMediaApiTests(TestCase):
@@ -130,7 +144,7 @@ class AuthenticatedSocialMediaApiTests(TestCase):
             "bio": "This is a test bio"
         }
 
-        response = self.client.post(USER_URL, self.user_data)
+        self.client.post(USER_URL, self.user_data)
         user = get_user_model().objects.get(email=self.user_data["email"])
         self.client.force_authenticate(user=user)
 
@@ -138,8 +152,16 @@ class AuthenticatedSocialMediaApiTests(TestCase):
         """Test post list"""
         user = get_user_model().objects.get(email=self.user_data["email"])
         post1 = sample_post(user=user)
-        post2 = sample_post(user=user, title="Post2", message="This is a test post 2")
-        post3 = sample_post(user=user, title="Post3", message="This is a test post 3")
+        post2 = sample_post(
+            user=user,
+            title="Post2",
+            message="This is a test post 2"
+        )
+        post3 = sample_post(
+            user=user,
+            title="Post3",
+            message="This is a test post 3"
+        )
         publishing_post()
         res = self.client.get(POSTS_URL)
         posts = Post.objects.all()
@@ -172,12 +194,26 @@ class AuthenticatedSocialMediaApiTests(TestCase):
         """Test filtering posts by fields:
         username, title, message, hashtag"""
         user = get_user_model().objects.get(email=self.user_data["email"])
-        post1 = sample_post(user=user, title="Post1", message="This is a test post1")
-        post2 = sample_post(user=user, title="Post2", message="This is a test post2")
-        post3 = sample_post(user=user, title="Post3", message="This is a test post3")
+        post1 = sample_post(
+            user=user,
+            title="Post1",
+            message="This is a test post1"
+        )
+        post2 = sample_post(
+            user=user,
+            title="Post2",
+            message="This is a test post2"
+        )
+        post3 = sample_post(
+            user=user,
+            title="Post3",
+            message="This is a test post3"
+        )
         publishing_post()
-        res = self.client.get(POSTS_URL, {"username": "admin", "title": "Post2"})
-        posts = Post.objects.all()
+        res = self.client.get(
+            POSTS_URL,
+            {"username": "admin", "title": "Post2"}
+        )
         post1.is_published = True
         post1.save()
         post2.is_published = True
@@ -210,7 +246,7 @@ class UserReactionSocialMediaApiTests(TestCase):
             "bio": "This is a test bio"
         }
 
-        response = self.client.post(USER_URL, self.user_data1)
+        self.client.post(USER_URL, self.user_data1)
         admin = get_user_model().objects.get(email=self.user_data1["email"])
         self.client.force_authenticate(user=admin)
         self.post1_admin = sample_post(user=admin)
@@ -223,7 +259,7 @@ class UserReactionSocialMediaApiTests(TestCase):
             "profile_pic": "",
             "bio": "This is a test2 about User"
         }
-        response2 = self.client.post(USER_URL, self.user_data2)
+        self.client.post(USER_URL, self.user_data2)
         user = get_user_model().objects.get(email=self.user_data2["email"])
         self.client.force_authenticate(user=user)
 
@@ -243,7 +279,8 @@ class UserReactionSocialMediaApiTests(TestCase):
         self.assertEqual(res.data['reaction'], payload['reaction'])
 
     def test_double_creation_reaction(self):
-        """Test double creation of reaction for the post which already has reaction"""
+        """Test double creation of reaction
+        for the post which already has reaction"""
         payload = {
             "post": self.post1_admin.id,
             "reaction": "L"
@@ -259,4 +296,24 @@ class UserReactionSocialMediaApiTests(TestCase):
             format='json'
         )
         self.assertEqual(res2.status_code, 400)
-        self.assertEqual(res2.data["detail"], "You have already reacted to this post.")
+        self.assertEqual(
+            res2.data["detail"],
+            "You have already reacted to this post."
+        )
+
+    def test_forbidden_creation_own_post_reaction(self):
+        """Test for ban creation of reaction for the own post"""
+        payload = {
+            "post": self.post1_admin.id,
+            "reaction": "L"
+        }
+        admin = get_user_model().objects.get(email=self.user_data1["email"])
+        self.client.force_authenticate(user=admin)
+        res = self.client.post(
+            REACTION_CREATE_URL,
+            payload,
+            format='json'
+        )
+
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.data["detail"], "You cannot like your own post.")
