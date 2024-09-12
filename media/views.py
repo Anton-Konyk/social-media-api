@@ -370,6 +370,8 @@ class UserReactionViewSet(
         post = serializer.validated_data["post"]
         if post.user_id == user.id:
             raise ValidationError({"detail": "You cannot like your own post."})
+        if UserReaction.objects.filter(user=user, post=post).exists():
+            raise ValidationError({"detail": "You have already reacted to this post."})
 
         serializer.save(user=user)
 
